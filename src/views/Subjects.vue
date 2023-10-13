@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex justify-center">
-    <v-data-table v-model:items-per-page="itemsPerPage" :headers="headers" :items="desserts" item-value="name" class="elevation-1">
+    <v-data-table v-model:items-per-page="itemsPerPage" :headers="headers" :items="subjects" item-value="name" class="elevation-1">
       <template v-slot:item.actions="{ item }">
         <v-btn @click="viewPanels(item)"> Show propositions </v-btn>
       </template>
@@ -10,10 +10,11 @@
   <v-overlay v-model="showOverlay" class="justify-center align-center">
     <v-row align="center" justify="center" class="overlay-content">
       <v-card class="custom-card">
-        <v-select return-object item-title="name" item-value="name" :items="panel" :label="choosenSubject.name"> </v-select>
+        <v-select v-model="choosenVote" return-object item-title="name" item-value="name" :items="panel" :label="choosenSubject.name">
+        </v-select>
 
         <v-card-actions>
-          <v-btn> Vote </v-btn>
+          <v-btn :disabled="choosenVote == null" @click="voteForPanel"> Vote </v-btn>
           <v-btn @click="showOverlay = false">Close</v-btn>
         </v-card-actions>
       </v-card>
@@ -33,26 +34,76 @@
 import axios from 'axios';
 
 export default {
+  created() {
+    axios
+      .get('/subject', {
+        headers: {
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2aXRhbElkIjoiMTI2OTY5Mzg3OTM3MDkiLCJpZCI6IjViZGU1ZmE1LTkwMDgtNDZmNi1iNjQ0LTMyNzhmYTA4NzQ5NSIsImlhdCI6MTY5NzE5MDU2MSwiZXhwIjoxNjk3MjUwNTYxfQ.b21VozArFlvJ9AaZFlpny0NeFQc8iuz_FjVmNrxqZAk',
+        },
+      })
+      .then(
+        response => {
+          console.log('response', response);
+          this.subjects = response.data;
+        },
+        error => {
+          console.log(error);
+        }
+      );
+  },
   methods: {
+    voteForPanel() {
+      axios
+        .post(
+          '/vote',
+          { panelId: this.choosenVote.id, subjectId: this.choosenSubject.id },
+          {
+            headers: {
+              Authorization:
+                'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2aXRhbElkIjoiMTI2OTY5Mzg3OTM3MDkiLCJpZCI6IjViZGU1ZmE1LTkwMDgtNDZmNi1iNjQ0LTMyNzhmYTA4NzQ5NSIsImlhdCI6MTY5NzE5MDU2MSwiZXhwIjoxNjk3MjUwNTYxfQ.b21VozArFlvJ9AaZFlpny0NeFQc8iuz_FjVmNrxqZAk',
+            },
+          }
+        )
+        .then(
+          response => {
+            this.showOverlay = false;
+            this.showVoteToaster = true;
+          },
+          error => {
+            console.log(error);
+          }
+        );
+    },
     viewPanels(item) {
       // get items
       this.choosenSubject = item;
+
       axios
-        .get('/api/panel/')
-        .then(response => {})
+        .get(`/subject/${item.id}/panels`, {
+          headers: {
+            Authorization:
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2aXRhbElkIjoiMTI2OTY5Mzg3OTM3MDkiLCJpZCI6IjViZGU1ZmE1LTkwMDgtNDZmNi1iNjQ0LTMyNzhmYTA4NzQ5NSIsImlhdCI6MTY5NzE5MDU2MSwiZXhwIjoxNjk3MjUwNTYxfQ.b21VozArFlvJ9AaZFlpny0NeFQc8iuz_FjVmNrxqZAk',
+          },
+        })
+        .then(response => {
+          console.log('panel : ', response);
+          this.panel = response.data.Panel;
+        })
         .catch(error => {
           console.log(error);
         });
-      console.log('view panel');
-      this.panel = [{ name: 'Vote for president macron :)' }];
       this.showOverlay = true;
     },
   },
 
   data() {
     return {
+      showVoteToaster: false,
+      choosenVote: null,
       panel: [],
       showOverlay: false,
+      subjects: [],
       choosenSubject: '',
       headers: [
         {
