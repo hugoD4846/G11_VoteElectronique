@@ -30,16 +30,25 @@
 }
 </style>
 <script>
+import axios from 'axios';
+
 export default {
   methods: {
     viewPanels(item) {
       // get items
       this.choosenSubject = item;
+      axios
+        .get('/api/panel/')
+        .then(response => {})
+        .catch(error => {
+          console.log(error);
+        });
       console.log('view panel');
       this.panel = [{ name: 'Vote for president macron :)' }];
       this.showOverlay = true;
     },
   },
+
   data() {
     return {
       panel: [],

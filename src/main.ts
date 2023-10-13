@@ -5,16 +5,18 @@
  */
 
 // Components
-import App from './App.vue'
+import App from './App.vue';
 
 // Composables
-import { createApp } from 'vue'
+import { createApp } from 'vue';
 
 // Plugins
-import { registerPlugins } from '@/plugins'
+import { registerPlugins } from '@/plugins';
+import axios from 'axios';
+import VueAxios from 'vue-axios';
+const app = createApp(App);
+app.use(VueAxios, axios);
+axios.defaults.baseURL = 'http://localhost:4000';
+registerPlugins(app);
 
-const app = createApp(App)
-
-registerPlugins(app)
-
-app.mount('#app')
+app.mount('#app');
