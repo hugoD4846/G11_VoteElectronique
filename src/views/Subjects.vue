@@ -1,6 +1,12 @@
 <template>
   <div class="d-flex justify-center">
-    <v-data-table v-model:items-per-page="itemsPerPage" :headers="headers" :items="subjects" item-value="name" class="elevation-1">
+    <v-data-table
+      v-model:items-per-page="itemsPerPage"
+      :headers="headers"
+      :items="subjects"
+      item-value="name"
+      class="elevation-1"
+    >
       <template v-slot:item.actions="{ item }">
         <v-btn @click="viewPanels(item)"> Show propositions </v-btn>
       </template>
@@ -10,18 +16,36 @@
   <v-overlay v-model="showOverlay" class="justify-center align-center">
     <v-row align="center" justify="center" class="overlay-content">
       <v-card class="custom-card">
-        <v-select v-model="choosenVote" return-object item-title="name" item-value="name" :items="panel" :label="choosenSubject.name">
+        <v-select
+          v-model="choosenVote"
+          return-object
+          item-title="name"
+          item-value="name"
+          :items="panel"
+          :label="choosenSubject.name"
+        >
         </v-select>
 
         <v-card-actions>
-          <v-btn :disabled="choosenVote == null" @click="voteForPanel"> Vote </v-btn>
+          <v-btn :disabled="choosenVote == null" @click="voteForPanel">
+            Vote
+          </v-btn>
           <v-btn @click="showOverlay = false">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-row>
   </v-overlay>
-  <v-snackbar color="error" :timeout="2000" v-model="showVoteError"> You have already voted for this subject </v-snackbar>
-  <v-snackbar :timeout="2000" color="success" v-model="showVoteToaster" variant="outlined"> Vote successfully added </v-snackbar>
+  <v-snackbar color="error" :timeout="2000" v-model="showVoteError">
+    You have already voted for this subject
+  </v-snackbar>
+  <v-snackbar
+    :timeout="2000"
+    color="success"
+    v-model="showVoteToaster"
+    variant="outlined"
+  >
+    Vote successfully added
+  </v-snackbar>
 </template>
 <style>
 .overlay-content {
@@ -33,47 +57,34 @@
 }
 </style>
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
   created() {
-    axios
-      .get('/subject', {
-        headers: {
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2aXRhbElkIjoiOTg3NjU0MzIxIiwiaWQiOiI3YjY2OTBmOC0wNDkwLTQyZmItODVkMi0yYmYzYzAzY2UxNWMiLCJpYXQiOjE2OTc2NTUxMjcsImV4cCI6MTY5NzcxNTEyN30.2YKT1IadfqIOKOBIACk3jlvuYG5K9Hz29gA9_J06EEs',
-        },
-      })
-      .then(
-        response => {
-          this.subjects = response.data;
-          this.setNbOfVotes(this.subjects);
-        },
-        error => {
-          console.log(error);
-        }
-      );
+    axios.get("/subject", {}).then(
+      (response) => {
+        this.subjects = response.data;
+        this.setNbOfVotes(this.subjects);
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
   },
   methods: {
     voteForPanel() {
       axios
-        .post(
-          '/vote',
-          { panelId: this.choosenVote.id, subjectId: this.choosenSubject.id },
-          {
-            headers: {
-              Authorization:
-                'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2aXRhbElkIjoiOTg3NjU0MzIxIiwiaWQiOiI3YjY2OTBmOC0wNDkwLTQyZmItODVkMi0yYmYzYzAzY2UxNWMiLCJpYXQiOjE2OTc2NTUxMjcsImV4cCI6MTY5NzcxNTEyN30.2YKT1IadfqIOKOBIACk3jlvuYG5K9Hz29gA9_J06EEs',
-            },
-          }
-        )
+        .post("/vote", {
+          panelId: this.choosenVote.id,
+          subjectId: this.choosenSubject.id,
+        })
         .then(
-          response => {
+          (response) => {
             this.choosenSubject.nbVotes++;
             this.showOverlay = false;
             this.showVoteToaster = true;
           },
-          error => {
+          (error) => {
             this.showVoteError = true;
           }
         );
@@ -84,7 +95,7 @@ export default {
       for (const item of items) {
         nbVotes = 0;
         for (const panel of item.Panel) {
-          console.log('panel', panel);
+          console.log("panel", panel);
           nbVotes += panel._count.votes;
         }
         item.nbVotes = nbVotes;
@@ -105,17 +116,17 @@ export default {
       panel: [],
       showOverlay: false,
       subjects: [],
-      choosenSubject: '',
+      choosenSubject: "",
       headers: [
         {
-          title: 'Name',
-          align: 'start',
+          title: "Name",
+          align: "start",
           sortable: false,
-          key: 'name',
+          key: "name",
         },
-        { title: 'Creation date', key: 'createdAt' },
-        { title: 'Number of votes', key: 'nbVotes' },
-        { title: 'Proposals', key: 'actions' },
+        { title: "Creation date", key: "createdAt" },
+        { title: "Number of votes", key: "nbVotes" },
+        { title: "Proposals", key: "actions" },
       ],
     };
   },
