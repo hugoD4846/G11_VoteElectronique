@@ -20,6 +20,8 @@
       </v-card>
     </v-row>
   </v-overlay>
+  <v-snackbar color="error" :timeout="2000" v-model="showVoteError"> You have already voted for this subject </v-snackbar>
+  <v-snackbar :timeout="2000" color="success" v-model="showVoteToaster" variant="outlined"> Vote successfully added </v-snackbar>
 </template>
 <style>
 .overlay-content {
@@ -39,13 +41,13 @@ export default {
       .get('/subject', {
         headers: {
           Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2aXRhbElkIjoiMTI2OTY5Mzg3OTM3MDkiLCJpZCI6IjViZGU1ZmE1LTkwMDgtNDZmNi1iNjQ0LTMyNzhmYTA4NzQ5NSIsImlhdCI6MTY5NzE5MDU2MSwiZXhwIjoxNjk3MjUwNTYxfQ.b21VozArFlvJ9AaZFlpny0NeFQc8iuz_FjVmNrxqZAk',
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2aXRhbElkIjoiOTg3NjU0MzIxIiwiaWQiOiI3YjY2OTBmOC0wNDkwLTQyZmItODVkMi0yYmYzYzAzY2UxNWMiLCJpYXQiOjE2OTc2NTUxMjcsImV4cCI6MTY5NzcxNTEyN30.2YKT1IadfqIOKOBIACk3jlvuYG5K9Hz29gA9_J06EEs',
         },
       })
       .then(
         response => {
-          console.log('response', response);
           this.subjects = response.data;
+          this.setNbOfVotes(this.subjects);
         },
         error => {
           console.log(error);
@@ -61,38 +63,37 @@ export default {
           {
             headers: {
               Authorization:
-                'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2aXRhbElkIjoiMTI2OTY5Mzg3OTM3MDkiLCJpZCI6IjViZGU1ZmE1LTkwMDgtNDZmNi1iNjQ0LTMyNzhmYTA4NzQ5NSIsImlhdCI6MTY5NzE5MDU2MSwiZXhwIjoxNjk3MjUwNTYxfQ.b21VozArFlvJ9AaZFlpny0NeFQc8iuz_FjVmNrxqZAk',
+                'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2aXRhbElkIjoiOTg3NjU0MzIxIiwiaWQiOiI3YjY2OTBmOC0wNDkwLTQyZmItODVkMi0yYmYzYzAzY2UxNWMiLCJpYXQiOjE2OTc2NTUxMjcsImV4cCI6MTY5NzcxNTEyN30.2YKT1IadfqIOKOBIACk3jlvuYG5K9Hz29gA9_J06EEs',
             },
           }
         )
         .then(
           response => {
+            this.choosenSubject.nbVotes++;
             this.showOverlay = false;
             this.showVoteToaster = true;
           },
           error => {
-            console.log(error);
+            this.showVoteError = true;
           }
         );
+    },
+
+    setNbOfVotes(items) {
+      let nbVotes = 0;
+      for (const item of items) {
+        nbVotes = 0;
+        for (const panel of item.Panel) {
+          console.log('panel', panel);
+          nbVotes += panel._count.votes;
+        }
+        item.nbVotes = nbVotes;
+      }
     },
     viewPanels(item) {
       // get items
       this.choosenSubject = item;
-
-      axios
-        .get(`/subject/${item.id}/panels`, {
-          headers: {
-            Authorization:
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2aXRhbElkIjoiMTI2OTY5Mzg3OTM3MDkiLCJpZCI6IjViZGU1ZmE1LTkwMDgtNDZmNi1iNjQ0LTMyNzhmYTA4NzQ5NSIsImlhdCI6MTY5NzE5MDU2MSwiZXhwIjoxNjk3MjUwNTYxfQ.b21VozArFlvJ9AaZFlpny0NeFQc8iuz_FjVmNrxqZAk',
-          },
-        })
-        .then(response => {
-          console.log('panel : ', response);
-          this.panel = response.data.Panel;
-        })
-        .catch(error => {
-          console.log(error);
-        });
+      this.panel = this.choosenSubject.Panel;
       this.showOverlay = true;
     },
   },
@@ -112,91 +113,9 @@ export default {
           sortable: false,
           key: 'name',
         },
-        { title: 'Organisation', key: 'organisation' },
         { title: 'Creation date', key: 'createdAt' },
+        { title: 'Number of votes', key: 'nbVotes' },
         { title: 'Proposals', key: 'actions' },
-      ],
-      desserts: [
-        {
-          name: 'Frozen Yogurt',
-          calories: 159,
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0,
-          iron: 1,
-        },
-        {
-          name: 'Ice cream sandwich',
-          calories: 237,
-          fat: 9.0,
-          carbs: 37,
-          protein: 4.3,
-          iron: 1,
-        },
-        {
-          name: 'Eclair',
-          calories: 262,
-          fat: 16.0,
-          carbs: 23,
-          protein: 6.0,
-          iron: 7,
-        },
-        {
-          name: 'Cupcake',
-          calories: 305,
-          fat: 3.7,
-          carbs: 67,
-          protein: 4.3,
-          iron: 8,
-        },
-        {
-          name: 'Gingerbread',
-          calories: 356,
-          fat: 16.0,
-          carbs: 49,
-          protein: 3.9,
-          iron: 16,
-        },
-        {
-          name: 'Jelly bean',
-          calories: 375,
-          fat: 0.0,
-          carbs: 94,
-          protein: 0.0,
-          iron: 0,
-        },
-        {
-          name: 'Lollipop',
-          calories: 392,
-          fat: 0.2,
-          carbs: 98,
-          protein: 0,
-          iron: 2,
-        },
-        {
-          name: 'Honeycomb',
-          calories: 408,
-          fat: 3.2,
-          carbs: 87,
-          protein: 6.5,
-          iron: 45,
-        },
-        {
-          name: 'Donut',
-          calories: 452,
-          fat: 25.0,
-          carbs: 51,
-          protein: 4.9,
-          iron: 22,
-        },
-        {
-          name: 'KitKat',
-          calories: 518,
-          fat: 26.0,
-          carbs: 65,
-          protein: 7,
-          iron: 6,
-        },
       ],
     };
   },
